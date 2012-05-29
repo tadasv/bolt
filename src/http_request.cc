@@ -25,11 +25,13 @@ static const http_parser_settings kParserSettings = {
 
 
 Request::Request()
-    : body_len_(0), body_len_unknown_(true),
-      parse_finished_(false)
+    : body_len_(0)
 {
     http_parser_init(&parser_, HTTP_REQUEST);
     parser_.data = this;
+
+    memset(&state_, 0, sizeof(state_));
+    state_.invalid = 1;
 }
 
 
@@ -43,10 +45,22 @@ size_t Request::parse(const char *data, const size_t &len)
     size_t nparsed = http_parser_execute(&parser_, &kParserSettings, data, len);
 
     if (nparsed != len) {
-        // TODO bad request
+        state_.invalid = 1;
     }
 
     return nparsed;
+}
+
+
+bool Request::finished() const
+{
+    return state_.parse_finished;
+}
+
+
+bool Request::valid() const
+{
+    return !state_.invalid;
 }
 
 
@@ -140,7 +154,8 @@ void Request::add_header(const std::string &header, const std::string &value)
 
 void Request::on_message_complete()
 {
-    parse_finished_ = true;
+    state_.parse_finished = 1;
+    state_.invalid = 0;
 }
 
 static int on_message_begin(http_parser *parser)
