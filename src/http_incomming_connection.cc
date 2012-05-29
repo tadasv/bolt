@@ -47,6 +47,32 @@ static void read_callback(struct ev_loop *loop, ev_io *io, int revents)
 
 static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
 {
+
+    IncommingConnection *connection = static_cast<IncommingConnection*>(io->data);
+    if (connection->request.finished()) {
+        // 200
+        std::string res = std::string(
+            "HTTP/1.1 200 OK\r\n"
+            "Connection: close\r\n"
+            "Content-Type: text/plain\r\n\r\n"
+            "hello world!\r\n\r\n");
+
+        connection->write(res.c_str(), res.length());
+        connection->server()->remove_connection(connection);
+        delete connection;
+
+    } else if (connection->request.valid() == false) {
+        // bad request
+        std::string res = std::string(
+            "HTTP/1.1 400 Bad Request\r\n"
+            "Connection: close\r\n"
+            "Content-Type: text/plain\r\n\r\n"
+            "shit went south\r\n\r\n");
+
+        connection->write(res.c_str(), res.length());
+        connection->server()->remove_connection(connection);
+        delete connection;
+    }
 }
 
 IncommingConnection::IncommingConnection(Server *server, struct ev_loop *loop, int socket, struct sockaddr_in address)
@@ -99,6 +125,16 @@ int IncommingConnection::read()
     }
 
     return bytes_read;
+}
+
+
+int IncommingConnection::write(const char *data, const size_t &len)
+{
+    ssize_t bytes_written;
+
+    bytes_written = send(socket_, data, len, 0);
+
+    return bytes_written;
 }
 
 

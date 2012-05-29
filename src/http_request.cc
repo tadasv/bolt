@@ -31,7 +31,6 @@ Request::Request()
     parser_.data = this;
 
     memset(&state_, 0, sizeof(state_));
-    state_.invalid = 1;
 }
 
 
