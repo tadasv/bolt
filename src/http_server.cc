@@ -42,7 +42,8 @@ static void accept_callback(struct ev_loop *loop, ev_io *watcher, int revents)
 }
 
 Server::Server(unsigned port, struct ev_loop *loop)
-    : port_number_(port), socket_(-1), init_complete_(false), event_loop_(loop)
+    : port_number_(port), socket_(-1), init_complete_(false), event_loop_(loop),
+      router_(0)
 {
 }
 
@@ -120,6 +121,18 @@ bolt::core::BoltResult Server::stop()
     init();
 
     return bolt::core::kResultOK;
+}
+
+
+void Server::set_router(RequestRouter *router)
+{
+    router_ = router;
+}
+
+
+RequestRouter *Server::router() const
+{
+    return router_;
 }
 
 

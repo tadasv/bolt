@@ -22,8 +22,9 @@
 #include <stdio.h>
 
 #include "logging.h"
-#include "http_incomming_connection.h"
 #include "http_server.h"
+#include "http_incomming_connection.h"
+#include "http_request_router.h"
 
 namespace bolt {
 namespace network {
@@ -49,18 +50,27 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
 {
 
     IncommingConnection *connection = static_cast<IncommingConnection*>(io->data);
-    if (connection->request.finished()) {
-        // 200
-        std::string res = std::string(
-            "HTTP/1.1 200 OK\r\n"
-            "Connection: close\r\n"
-            "Content-Type: text/plain\r\n\r\n"
-            "hello world!\r\n\r\n");
 
-        connection->write(res.c_str(), res.length());
+    if (connection->request.finished()) {
+        RequestRouter *router = connection->server()->router();
+        if (!router) {
+            // Kill the connection right way since we don't have any handler
+            // set up
+            connection->server()->remove_connection(connection);
+            delete connection;
+            return;
+        }
+
+        const std::string &path = connection->request.path();
+        RequestRouter::request_handler_t handler = router->route(path);
+
+        // Handle the request
+        if (handler) {
+            handler(connection);
+        }
+
         connection->server()->remove_connection(connection);
         delete connection;
-
     } else if (connection->request.valid() == false) {
         // bad request
         std::string res = std::string(

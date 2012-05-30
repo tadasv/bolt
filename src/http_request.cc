@@ -63,6 +63,12 @@ bool Request::valid() const
 }
 
 
+const std::string & Request::path() const
+{
+    return uri_;
+}
+
+
 void Request::set_uri(const char *data, const size_t &len)
 {
     if (!data || len == 0) {

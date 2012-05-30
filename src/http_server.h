@@ -30,6 +30,7 @@
 
 #include "types.h"
 #include "http_incomming_connection.h"
+#include "http_request_router.h"
 
 namespace bolt {
 namespace network {
@@ -51,6 +52,9 @@ class Server {
         void add_connection(const IncommingConnection *connection);
         void remove_connection(const IncommingConnection *connection);
 
+        void set_router(RequestRouter *router);
+        RequestRouter *router() const;
+
         int listening_socket() const;
         struct ev_loop *event_loop() const;
 
@@ -62,6 +66,7 @@ class Server {
         struct ev_loop *event_loop_;
         struct ev_io accept_watcher_;
         connections_t connections_;
+        RequestRouter *router_;
 };
 
 }; // namespace http
