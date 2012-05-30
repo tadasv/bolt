@@ -20,6 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cassert>
+#include <fcntl.h>
 
 #include "logging.h"
 #include "http_server.h"
@@ -132,6 +133,13 @@ IncommingConnection* Server::accept_connection()
     client_socket = accept(socket_, (struct sockaddr*)&client_addr, &client_len);
     if (client_socket < 0) {
         bolt_log_error("Failed to accept incomming connection.");
+        return 0;
+    }
+
+    int flags = fcntl(client_socket, F_GETFL, 0);
+    if (fcntl(client_socket, F_SETFL, (flags < 0 ? 0 : flags) | O_NONBLOCK) == -1) {
+        bolt_log_debug("Failed to set nonblocking client socket.");
+        shutdown(client_socket, SHUT_RDWR);
         return 0;
     }
 
