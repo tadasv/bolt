@@ -76,7 +76,7 @@ bolt::core::BoltResult Server::start()
         return bolt::core::kResultError;
     }
 
-    socket_ = socket(PF_INET, SOCK_STREAM, 0);
+    socket_ = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_ < 0) {
         return bolt::core::kResultNetworkError;
     }
