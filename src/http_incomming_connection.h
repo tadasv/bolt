@@ -27,6 +27,7 @@
 #include <ev.h>
 
 #include "http_request.h"
+#include "http_response.h"
 
 namespace bolt {
 namespace network {
@@ -45,6 +46,7 @@ class IncommingConnection {
         Server *server();
 
         Request request;
+        Response response;
     protected:
         Server *server_;
         int socket_;

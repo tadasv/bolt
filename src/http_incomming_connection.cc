@@ -69,6 +69,11 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
             handler(connection);
         }
 
+        if (connection->response.finished()) {
+            const std::string data = connection->response.data();
+            connection->write(data.c_str(), data.length());
+        }
+
         connection->server()->remove_connection(connection);
         delete connection;
     } else if (connection->request.valid() == false) {

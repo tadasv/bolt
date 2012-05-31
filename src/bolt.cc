@@ -24,6 +24,7 @@
 
 #include "logging.h"
 #include "http_server.h"
+#include "http_request_router.h"
 
 int main(int argc, char **argv)
 {
@@ -45,12 +46,16 @@ int main(int argc, char **argv)
         loop_socket = loop;
     }
 
+    bolt::network::http::RequestRouter router;
+
     bolt::network::http::Server server(3333, loop_socket);
 
     if (server.init() != bolt::core::kResultOK) {
         printf("Failed to initialise server.\n");
         return -1;
     }
+
+    server.set_router(&router);
 
     if (server.start() != bolt::core::kResultOK) {
         printf("Failed to start server.\n");

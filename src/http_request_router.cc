@@ -25,6 +25,20 @@ namespace bolt {
 namespace network {
 namespace http {
 
+
+static void default_handler(IncommingConnection *connection)
+{
+    Response &res = connection->response;
+
+    std::string data("HTTP/1.1 200 OK\r\n"
+                     "Connection: close\r\n"
+                     "Content-Type: application/json\r\n\r\n"
+                     "{\"error\":\"invalid request\"}\r\n\r\n");
+    res.write(data.c_str(), data.length());
+    res.finish();
+}
+
+
 RequestRouter::RequestRouter()
 {
 }
@@ -47,7 +61,7 @@ RequestRouter::request_handler_t RequestRouter::route(const std::string &path)
     if (iter != routes_.end()) {
         return iter->second;
     }
-    return 0;
+    return default_handler;
 }
 
 }; // namespace http
