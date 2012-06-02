@@ -91,7 +91,7 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
 }
 
 IncommingConnection::IncommingConnection(Server *server, struct ev_loop *loop, int socket, struct sockaddr_in address)
-    : server_(server), socket_(socket), address_(address), read_buffer_size_(512), event_loop_(loop)
+    : server_(server), socket_(socket), read_buffer_size_(512), address_(address), event_loop_(loop)
 {
     bolt_log_debug("New connection %p", this);
 
@@ -131,7 +131,7 @@ int IncommingConnection::read()
         return bytes_read;
     }
 
-    size_t nparsed = request.parse(read_buffer_, bytes_read);
+    request.parse(read_buffer_, bytes_read);
 
     if (bytes_read == 0) {
         ev_io_stop(event_loop_, &read_watcher_);
