@@ -25,9 +25,15 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/build")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/build")
 
 aux_source_directory("${PROJECT_BINARY_DIR}/src" BOLT_SOURCES)
+aux_source_directory("${PROJECT_BINARY_DIR}/tests/unit" UNIT_TEST_SOURCES)
 
 add_library(http_parser STATIC "${PROJECT_BINARY_DIR}/deps/http-parser/http_parser.c")
 
+add_executable(bolt_unit_tests ${UNIT_TEST_SOURCES} "${PROJECT_BINARY_DIR}/src/http_request.cc")
 add_executable(bolt ${BOLT_SOURCES})
 
 target_link_libraries(bolt http_parser ev)
+target_link_libraries(bolt_unit_tests gtest gtest_main http_parser)
+
+enable_testing()
+add_test(bolt "${EXECUTABLE_OUTPUT_PATH}/bolt_unit_tests")
