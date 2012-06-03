@@ -15,7 +15,7 @@ void handler_B(bolt::network::http::IncommingConnection *c)
 }
 
 
-TEST(HttpRequestRouterTest, RoutesTest)
+TEST(HttpRequestRouterTestCase, RoutesTest)
 {
     bolt::network::http::RequestRouter router;
     bolt::network::http::RequestRouter::request_handler_t handler;
