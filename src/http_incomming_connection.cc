@@ -51,7 +51,7 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
 
     IncommingConnection *connection = static_cast<IncommingConnection*>(io->data);
 
-    if (connection->request.finished()) {
+    if (connection->request.has_finished()) {
         RequestRouter *router = connection->server()->router();
         if (!router) {
             // Kill the connection right way since we don't have any handler
@@ -76,7 +76,7 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
 
         connection->server()->remove_connection(connection);
         delete connection;
-    } else if (connection->request.valid() == false) {
+    } else if (connection->request.is_valid() == false) {
         // bad request
         std::string res = std::string(
             "HTTP/1.1 400 Bad Request\r\n"

@@ -40,8 +40,8 @@ class Request {
         typedef std::map<std::string, std::string> headers_t;
 
         size_t parse(const char *data, const size_t &len);
-        bool finished() const;
-        bool valid() const;
+        bool has_finished() const;
+        bool is_valid() const;
 
         void update_body(const char *data, const size_t &len);
         void update_header_field(const char *data, const size_t &len);
@@ -76,13 +76,8 @@ class Request {
         std::string header_field_;
         std::string header_value_;
 
-        struct {
-            unsigned parse_finished : 1;
-            unsigned keep_alive: 1;
-            unsigned body_len_unknown : 1;
-            unsigned invalid : 1;
-        } state_;
-
+        bool invalid_;
+        bool parse_finished_;
 };
 
 }; // namespace http
