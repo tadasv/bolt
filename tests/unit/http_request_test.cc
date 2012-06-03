@@ -12,6 +12,16 @@ static const std::string REQUEST_A = std::string(
 "\r\n"
 );
 
+
+static const std::string REQUEST_B = std::string(
+"GET /path?a=1&b=2&_ HTTP/1.1\r\n"
+"Connection: close\r\n"
+"Header: value\r\n"
+"\r\n"
+"this is body\r\n"
+"\r\n"
+);
+
 TEST(HttpRequestTestCase, ParserTest)
 {
     bolt::network::http::Request *req;
@@ -44,5 +54,15 @@ TEST(HttpRequestTestCase, ParserTest)
     ASSERT_TRUE(req->has_body());
     ASSERT_TRUE(req->has_uri());
     ASSERT_STREQ("this is body", req->body().c_str());
+    delete req;
+
+    // If request contain no Content-Length we won't parse the body.
+    req = new bolt::network::http::Request();
+    nparsed = req->parse(REQUEST_B.c_str(), REQUEST_B.length());
+    ASSERT_TRUE(nparsed < REQUEST_B.length());
+    ASSERT_TRUE(req->has_finished());
+    ASSERT_FALSE(req->is_valid());
+    ASSERT_FALSE(req->has_body());
+    ASSERT_TRUE(req->has_uri());
     delete req;
 }
