@@ -84,6 +84,12 @@ bool Request::is_valid() const
 }
 
 
+const std::string & Request::body() const
+{
+    return body_;
+}
+
+
 const std::string & Request::path() const
 {
     return uri_;

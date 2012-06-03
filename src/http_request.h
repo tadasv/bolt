@@ -60,6 +60,7 @@ class Request {
         std::string header_field() const;
         std::string header_value() const;
 
+        const std::string & body() const;
         const std::string & path() const;
 
         void add_header(const std::string &header, const std::string &value);
