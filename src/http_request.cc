@@ -68,6 +68,8 @@ size_t Request::parse(const char *data, const size_t &len)
 
 static int on_message_begin(http_parser *parser)
 {
+    Request *request = static_cast<Request*>(parser->data);
+    request->state = kProcessing;
     return 0;
 }
 
