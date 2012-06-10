@@ -51,6 +51,7 @@ Server::~Server()
 {
     if (socket_ >= 0) {
         shutdown(socket_, SHUT_RDWR);
+        close(socket_);
     }
 }
 
@@ -90,6 +91,7 @@ bolt::core::BoltResult Server::start()
     res = bind(socket_, (struct sockaddr*)&addr_, sizeof(addr_));
     if (res != 0) {
         shutdown(socket_, SHUT_RDWR);
+        close(socket_);
         socket_ = -1;
         return bolt::core::kResultNetworkError;
     }
@@ -153,6 +155,7 @@ IncommingConnection* Server::accept_connection()
     if (fcntl(client_socket, F_SETFL, (flags < 0 ? 0 : flags) | O_NONBLOCK) == -1) {
         bolt_log_debug("Failed to set nonblocking client socket.");
         shutdown(client_socket, SHUT_RDWR);
+        close(client_socket);
         return 0;
     }
 

@@ -122,6 +122,7 @@ IncommingConnection::~IncommingConnection()
     ev_io_stop(event_loop_, &write_watcher_);
 
     shutdown(socket_, SHUT_RDWR);
+    close(socket_);
 
     delete [] read_buffer_;
 }
@@ -143,6 +144,7 @@ int IncommingConnection::read()
         ev_io_stop(event_loop_, &read_watcher_);
         ev_io_stop(event_loop_, &write_watcher_);
         shutdown(socket_, SHUT_RDWR);
+        close(socket_);
     }
 
     return bytes_read;
