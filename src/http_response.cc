@@ -20,43 +20,67 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "http_response.h"
+#include "string_utils.h"
 
 namespace bolt {
 namespace network {
 namespace http {
 
 Response::Response()
-    : finished_(false)
 {
+    state = kResponseNotStarted;
+    status_code = 200;
 }
 
 
-Response::~Response()
+void Response::write_head(const unsigned int &status_code)
 {
+    // Headers must be sent first, so don't do
+    // anything if we are trying to send headers
+    // in another state.
+    if (state != kResponseNotStarted) {
+        return;
+    }
+
+    buffer += "HTTP/1.1 " + t_to_string(status_code) + "\r\n";
+
+    headers_t::iterator iter;
+    for (iter = headers.begin(); iter != headers.end(); iter++) {
+        buffer += iter->first + ": " + iter->second + "\r\n";
+    }
+    buffer += "\r\n";
+
+    state = kResponseHeadersBuffered;
 }
 
 
 void Response::write(const char *str, const size_t &len)
 {
-    data_ = std::string(str, len);
+    if (state == kResponseNotStarted) {
+        write_head(status_code);
+    }
+
+    buffer += std::string(str, len);
 }
 
 
-const std::string & Response::data() const
+void Response::end()
 {
-    return data_;
+    end(NULL, 0);
 }
 
 
-bool Response::finished() const
+void Response::end(const char *str, const size_t &len)
 {
-    return finished_;
-}
+    if (str && len) {
+        write(str, len);
+    }
 
+    if (state == kResponseNotStarted) {
+        write_head(status_code);
+    }
 
-void Response::finish()
-{
-    finished_ = true;
+    state = kResponseFinished;
 }
 
 

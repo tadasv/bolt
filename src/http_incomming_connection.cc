@@ -54,7 +54,7 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
     if (connection->request.state == kFinished) {
         RequestRouter *router = connection->server()->router();
         if (!router) {
-            // Kill the connection right way since we don't have any handler
+            // Kill the connection right away since we don't have any handler
             // set up
             connection->server()->remove_connection(connection);
             delete connection;
@@ -69,13 +69,19 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
             handler(connection);
         }
 
-        if (connection->response.finished()) {
-            const std::string data = connection->response.data();
-            connection->write(data.c_str(), data.length());
+        // Write data to socket if buffer is not empty
+        // TODO in the future we might want to send data in
+        // chunks and call handler asynchronously.
+        if (connection->response.buffer.empty() == false) {
+            connection->write(connection->response.buffer.c_str(),
+                              connection->response.buffer.length());
         }
 
-        connection->server()->remove_connection(connection);
-        delete connection;
+        // Close connection if the handler is finished.
+        if (connection->response.state == kResponseFinished) {
+            connection->server()->remove_connection(connection);
+            delete connection;
+        }
     } else if (connection->request.state == kErrorInvalid) {
         // bad request
         std::string res = std::string(

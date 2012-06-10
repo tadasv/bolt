@@ -20,6 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "http_request_router.h"
+#include "string_utils.h"
 
 namespace bolt {
 namespace network {
@@ -30,12 +31,14 @@ static void default_handler(IncommingConnection *connection)
 {
     Response &res = connection->response;
 
-    std::string data("HTTP/1.1 200 OK\r\n"
-                     "Connection: close\r\n"
-                     "Content-Type: application/json\r\n\r\n"
-                     "{\"error\":\"invalid request\"}\r\n\r\n");
-    res.write(data.c_str(), data.length());
-    res.finish();
+    std::string body("{\"error\":\"invalid request\"}");
+
+    res.headers["Content-Type"] = "application/json";
+    res.headers["Content-Length"] = t_to_string(body.length());
+
+    res.write_head(400);
+    res.write(body.c_str(), body.length());
+    res.end();
 }
 
 

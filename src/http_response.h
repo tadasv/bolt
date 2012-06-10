@@ -25,24 +25,36 @@
 
 #include <string>
 
+#include "http_message.h"
+
 namespace bolt {
 namespace network {
 namespace http {
 
+enum ResponseStates {
+    kResponseNotStarted = 0,
+    kResponseHeadersBuffered,
+    kResponseDataBuffered,
+    kResponseFinished
+};
+
 class Response {
     public:
         Response();
-        ~Response();
 
+        void write_head(const unsigned int &status_code);
         void write(const char *str, const size_t &len);
+        void end(const char *str, const size_t &len);
+        void end();
 
-        const std::string &data() const;
-        bool finished() const;
-        void finish();
-
-    private:
-        std::string data_;
-        bool finished_;
+        // Status code that will be used for implicit header write.
+        unsigned int status_code;
+        // Response state. This field should not be modified directly.
+        ResponseStates state;
+        // Response buffer
+        std::string buffer;
+        // Response headers
+        headers_t headers;
 };
 
 }; // namespace http
