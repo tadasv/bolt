@@ -46,15 +46,21 @@ Url::Url()
 }
 
 
+Url::Url(const char *url, const size_t &len)
+{
+    parse(url, len);
+}
+
+
 Url::Url(const char *url)
 {
-    parse_(url);
+    parse(url, strlen(url));
 }
 
 
 Url::Url(const std::string &url)
 {
-    parse_(url.c_str());
+    parse(url.c_str(), url.length());
 }
 
 Url::Url(const std::string &schema, const std::string &host,
@@ -94,7 +100,7 @@ void Url::init_(const std::string &schema,
 }
 
 
-bool Url::parse_(const char *url)
+bool Url::parse(const char *url, size_t length)
 {
     struct http_parser_url parsed_url;
     uint16_t offset;
@@ -104,7 +110,7 @@ bool Url::parse_(const char *url)
     parsed_ = false;
 
     if (http_parser_parse_url(url,
-                              strlen(url),
+                              length,
                               0, // is_connect,
                               &parsed_url) != 0) {
         return false;

@@ -32,6 +32,8 @@ namespace http {
 class Url {
     public:
         Url();
+        Url(const char *url, const size_t &len);
+        Url(const std::string &url, const size_t &len);
         Url(const char *url);
         Url(const std::string &url);
 
@@ -56,6 +58,8 @@ class Url {
         inline const std::string & query() const { return query_; };
         inline const std::string & fragment() const { return fragment_; };
 
+        bool parse(const char *url, size_t len);
+
         inline bool parsed() const { return parsed_; };
     private:
         void init_(const std::string &schema="http",
@@ -64,8 +68,6 @@ class Url {
                    const std::string &path="",
                    const std::string &query="",
                    const std::string &fragment="");
-
-        bool parse_(const char *url);
 
         std::string schema_;
         std::string host_;
