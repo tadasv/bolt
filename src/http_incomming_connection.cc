@@ -52,6 +52,12 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
     IncommingConnection *connection = static_cast<IncommingConnection*>(io->data);
 
     if (connection->request.has_finished()) {
+        if (!connection->request.has_uri()) {
+            connection->server()->remove_connection(connection);
+            delete connection;
+            return;
+        }
+
         RequestRouter *router = connection->server()->router();
         if (!router) {
             // Kill the connection right way since we don't have any handler
@@ -61,7 +67,7 @@ static void write_callback(struct ev_loop *loop, ev_io *io, int wevents)
             return;
         }
 
-        const std::string &path = connection->request.path();
+        const std::string &path = connection->request.uri().path();
         RequestRouter::request_handler_t handler = router->route(path);
 
         // Handle the request

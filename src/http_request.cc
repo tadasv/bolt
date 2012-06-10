@@ -48,6 +48,7 @@ static const http_parser_settings kParserSettings = {
 Request::Request()
 {
     body_ = 0;
+    url_ = 0;
     content_length_ = ULLONG_MAX;
     parse_finished_ = false;
     invalid_ = false;
@@ -60,6 +61,10 @@ Request::~Request()
 {
     if (body_) {
         delete body_;
+    }
+
+    if (url_) {
+        delete url_;
     }
 }
 
@@ -94,20 +99,24 @@ const std::string & Request::body() const
 }
 
 
-const std::string & Request::path() const
+const Url & Request::uri() const
 {
-    return uri_;
+    return *url_;
 }
 
 
 void Request::set_uri(const char *data, const size_t &len)
 {
     if (!data || len == 0) {
-        uri_.clear();
         return;
     }
 
-    uri_ = std::string(data, len);
+    if (!url_) {
+        url_ = new Url(data, len);
+        return;
+    }
+
+    url_->parse(data, len);
 }
 
 

@@ -27,6 +27,7 @@
 #include <map>
 
 #include <http_parser.h>
+#include "http_url.h"
 
 namespace bolt {
 namespace network {
@@ -54,7 +55,7 @@ class Request {
         void set_header_value(const char *data, const size_t &len);
 
         inline bool has_body() const { return (body_ && !body_->empty()); };
-        inline bool has_uri() const { return !uri_.empty(); };
+        inline bool has_uri() const { return url_; };
         inline bool has_header_field() const { return !header_field_.empty(); };
         inline bool has_header_value() const { return !header_value_.empty(); };
 
@@ -64,7 +65,7 @@ class Request {
         std::string header_value() const;
 
         const std::string & body() const;
-        const std::string & path() const;
+        const Url & uri() const;
 
         void add_header(const std::string &header, const std::string &value);
 
@@ -74,7 +75,7 @@ class Request {
         // Actual content length from the HTTP headers
         size_t content_length_;
 
-        std::string uri_;
+        Url *url_;
         std::string *body_;
         headers_t headers_;
 
