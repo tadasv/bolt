@@ -35,6 +35,7 @@ TEST(HttpRequestTestCase, ParserTest)
     ASSERT_TRUE(req->has_body());
     ASSERT_TRUE(req->has_uri());
     ASSERT_STREQ("this is body", req->body().c_str());
+    ASSERT_EQ(12, req->content_length());
     delete req;
 
     // Parse in two chunks
@@ -54,6 +55,7 @@ TEST(HttpRequestTestCase, ParserTest)
     ASSERT_TRUE(req->has_body());
     ASSERT_TRUE(req->has_uri());
     ASSERT_STREQ("this is body", req->body().c_str());
+    ASSERT_EQ(12, req->content_length());
     delete req;
 
     // If request contain no Content-Length we won't parse the body.
@@ -64,5 +66,6 @@ TEST(HttpRequestTestCase, ParserTest)
     ASSERT_FALSE(req->is_valid());
     ASSERT_FALSE(req->has_body());
     ASSERT_TRUE(req->has_uri());
+    ASSERT_EQ(ULLONG_MAX, req->content_length());
     delete req;
 }

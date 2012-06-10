@@ -49,13 +49,16 @@ class Request {
 
         void set_uri(const char *data, const size_t &len);
         void set_body(const char *data, const size_t &len);
+        inline void set_content_length(const size_t &len) { content_length_ = len; };
         void set_header_field(const char *data, const size_t &len);
         void set_header_value(const char *data, const size_t &len);
 
-        inline bool has_body() const { return !body_.empty(); };
+        inline bool has_body() const { return (body_ && !body_->empty()); };
         inline bool has_uri() const { return !uri_.empty(); };
         inline bool has_header_field() const { return !header_field_.empty(); };
         inline bool has_header_value() const { return !header_value_.empty(); };
+
+        inline size_t content_length() const { return content_length_; }
 
         std::string header_field() const;
         std::string header_value() const;
@@ -68,10 +71,11 @@ class Request {
         void on_message_complete();
     private:
         http_parser parser_;
-        size_t body_len_;
+        // Actual content length from the HTTP headers
+        size_t content_length_;
 
         std::string uri_;
-        std::string body_;
+        std::string *body_;
         headers_t headers_;
 
         std::string header_field_;
