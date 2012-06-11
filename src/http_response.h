@@ -41,14 +41,51 @@ enum ResponseStates {
 class Response {
     public:
         Response();
-
+ 
+        /**
+         * @brief Buffer status line and HTTP headers for writing to the socket.
+         *
+         * @param status_code HTTP status code.
+         */
         void write_head(const unsigned int &status_code);
+
+        /**
+         * @brief Buffer chunk of data for writing to the socket.
+         *
+         * If this method is called before write_head, the headers will be
+         * written implicitly.
+         *
+         * @param str Data chunk.
+         * @param len Length of data.
+         */
         void write(const char *str, const size_t &len);
+
+        /**
+         * @brief End response by buffering final data chunk.
+         *
+         * If this method is called before write_head, the headers will be
+         * written implicitly.
+         *
+         * @param str Data chunk.
+         * @param len Length of data.
+         */
         void end(const char *str, const size_t &len);
+
+        /**
+         * @brief End response.
+         *
+         * If this method is called before write_head, the headers will be
+         * written implicitly.
+         */
         void end();
 
-        // Status code that will be used for implicit header write.
+        /**
+         * @brief HTTP status code.
+         *
+         * HTTP status code that will be used for implicit header write.
+         */
         unsigned int status_code;
+
         // Response state. This field should not be modified directly.
         ResponseStates state;
         // Response buffer
