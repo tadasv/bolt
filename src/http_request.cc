@@ -58,8 +58,15 @@ size_t Request::parse(const char *data, const size_t &len)
 {
     size_t nparsed = http_parser_execute(&parser_, &kParserSettings, data, len);
 
-    if (nparsed != len) {
-        state = kErrorInvalid;
+    // Make request invalid only if parser did not finish parsing the request
+    // and bytes parsed != bytes read. This is a little work around
+    // the cases when there is trailing data after the request. For instance,
+    // apache bench does some weird shit by writing multiple http messages
+    // at once.
+    if (state != kFinished) {
+        if (nparsed != len) {
+            state = kErrorInvalid;
+        }
     }
 
     return nparsed;
