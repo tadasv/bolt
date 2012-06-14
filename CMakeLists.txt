@@ -30,6 +30,7 @@ include_directories("${PROJECT_BINARY_DIR}"
 # Main sources
 #
 aux_source_directory("${PROJECT_BINARY_DIR}/src" BOLT_SOURCES)
+aux_source_directory("${PROJECT_BINARY_DIR}/src/db" BOLT_DB_SOURCES)
 # Have all sources but exclude main (bolt.cc)
 set(BOLT_SOURCES_NO_MAIN ${BOLT_SOURCES})
 list(REMOVE_ITEM BOLT_SOURCES_NO_MAIN "${PROJECT_BINARY_DIR}/src/bolt.cc")
@@ -46,13 +47,14 @@ add_executable(bolt "${PROJECT_BINARY_DIR}/src/bolt.cc")
 # Make libbolt_core which contains all bolt code except for main() so we could
 # link it with unit tests.
 add_library(bolt_core STATIC ${BOLT_SOURCES_NO_MAIN})
-target_link_libraries(bolt bolt_core http_parser ev)
+add_library(bolt_db STATIC ${BOLT_DB_SOURCES})
+target_link_libraries(bolt bolt_core bolt_db http_parser ev)
 
 #
 # Unit tests
 #
 aux_source_directory("${PROJECT_BINARY_DIR}/tests/unit" UNIT_TEST_SOURCES)
 add_executable(bolt_unit_tests "${PROJECT_BINARY_DIR}/tests/tests_base.cc" ${UNIT_TEST_SOURCES})
-target_link_libraries(bolt_unit_tests bolt_core gtest http_parser ev)
+target_link_libraries(bolt_unit_tests bolt_core bolt_db gtest http_parser ev)
 enable_testing()
 add_test(bolt "${EXECUTABLE_OUTPUT_PATH}/bolt_unit_tests")
