@@ -1,7 +1,30 @@
+// Copyright Tadas Vilkeliskis.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include "db/document.h"
 
 namespace bolt {
 namespace db {
+
+const int kInfiniteLifetimeTTL = -1;
 
 void generate_uuid(uuid_t id)
 {
@@ -28,6 +51,96 @@ std::string generate_uuid_str()
 bool str_to_uuid(const char *str, uuid_t id)
 {
     return (uuid_parse(str, id) == 0);
+}
+
+
+Document::Document()
+{
+    root_ = NULL;
+    ttl_ = -1;
+}
+
+
+Document::~Document()
+{
+    if (root_) {
+        json_decref(root_);
+        root_ = NULL;
+    }
+}
+
+
+DocumentError Document::parse(const std::string &str)
+{
+    return parse(str.c_str());
+}
+
+
+DocumentError Document::parse(const char *str)
+{
+    json_t *json = NULL;
+    json_error_t error;
+
+    json = json_loads(str, 0, &error);
+    if (!json) {
+        return kDocumentErrorParseFailed;
+    }
+
+    // Validate that root is object
+    if (!json_is_object(json)) {
+        json_decref(json);
+        return kDocumentErrorObjectExpected;
+    }
+
+    // Get the document ID if available or generate
+    // a new one on the fly.
+    json_t *doc_id = json_object_get(json, "_id");
+    if (!doc_id) {
+        std::string uuid = generate_uuid_str();
+        doc_id = json_string(uuid.c_str());
+        if (json_object_set_new(json, "_id", doc_id) == -1) {
+            json_decref(json);
+            return kDocumentError;
+        }
+    } else {
+        if (!json_is_string(doc_id)) {
+            // _id can only be a string, exit early if
+            // anything else.
+            json_decref(json);
+            return kDocumentErrorInvalidID;
+        }
+    }
+
+    // Extract TTL. Don't try to be too smart about it. We only support
+    // integer TTL. If anything else is passed in or TTL is < -1 exit
+    // early. If TTL is not passed in, implicitly assume infinite lifetime.
+    json_t *ttl = json_object_get(json, "_ttl");
+    if (!ttl) {
+        ttl_ = kInfiniteLifetimeTTL;
+        if (json_object_set_new(json, "_ttl", json_integer(ttl_)) == -1) {
+            json_decref(json);
+            return kDocumentError;
+        }
+    } else {
+        if (!json_is_integer(ttl)) {
+            json_decref(json);
+            return kDocumentErrorInvalidTTL;
+        }
+
+        ttl_ = json_integer_value(ttl);
+        if (ttl_ < -1) {
+            json_decref(json);
+            return kDocumentErrorInvalidTTL;
+        }
+    }
+
+    // Release previous root if calling parse
+    // multiple times.
+    if (root_) {
+        json_decref(root_);
+    }
+    root_ = json;
+    return kDocumentOK;
 }
 
 

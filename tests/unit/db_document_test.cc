@@ -12,3 +12,41 @@ TEST(DBDocumentTestCase, UUIDTest)
     ASSERT_TRUE(bolt::db::str_to_uuid(str.c_str(), id));
     ASSERT_FALSE(bolt::db::str_to_uuid("213", id));
 }
+
+
+TEST(DBDocumentTestCase, ParserTest)
+{
+    bolt::db::Document d;
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{}"));
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\"}"));
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": 0}"));
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": 1}"));
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": -1}"));
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": -1, \"b\": 123}"));
+
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse(""));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("\"\""));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("abc"));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("123"));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("1.2"));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("true"));
+    ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("false"));
+    ASSERT_EQ(bolt::db::kDocumentErrorObjectExpected, d.parse("[]"));
+
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": 123}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": 1.2}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": []}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": {}}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": true}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidID, d.parse("{\"_id\": false}"));
+
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": -2}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": 0.0}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": 1.2}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": []}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": {}}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": true}"));
+    ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": false}"));
+
+}
