@@ -30,6 +30,19 @@ namespace bolt {
 namespace network {
 namespace http {
 
+// After how many seconds to kill the connection if there is no activity.
+static const int kConnectionTimeout = 60;
+
+static void timeout_callback(struct ev_loop *loop, ev_timer *timer, int revents)
+{
+    IncommingConnection *connection = static_cast<IncommingConnection*>(timer->data);
+
+    if (connection->timeout()) {
+        connection->server()->remove_connection(connection);
+        delete connection;
+    }
+}
+
 static void read_callback(struct ev_loop *loop, ev_io *io, int revents)
 {
     IncommingConnection *connection = static_cast<IncommingConnection*>(io->data);
@@ -101,22 +114,29 @@ IncommingConnection::IncommingConnection(Server *server, struct ev_loop *loop, i
 {
     bolt_log_debug("New connection %p", this);
 
-    ev_io_init(&read_watcher_, bolt::network::http::read_callback, socket_, EV_READ);
-    ev_io_init(&write_watcher_, bolt::network::http::write_callback, socket_, EV_WRITE);
-
-    read_watcher_.data = this;
-    write_watcher_.data = this;
-
     read_buffer_ = new char[read_buffer_size_];
 
+    ev_io_init(&read_watcher_, bolt::network::http::read_callback, socket_, EV_READ);
+    read_watcher_.data = this;
     ev_io_start(event_loop_, &read_watcher_);
+
+    ev_io_init(&write_watcher_, bolt::network::http::write_callback, socket_, EV_WRITE);
+    write_watcher_.data = this;
     ev_io_start(event_loop_, &write_watcher_);
+
+    last_activity_ = ev_now(event_loop_);
+    ev_init(&timeout_timer_, timeout_callback);
+    timeout_timer_.data = this;
+
+    timeout_callback(event_loop_, &timeout_timer_, 0);
 }
 
 
 IncommingConnection::~IncommingConnection()
 {
     bolt_log_debug("Destoying connection %p", this);
+
+    ev_timer_stop(event_loop_, &timeout_timer_);
 
     ev_io_stop(event_loop_, &read_watcher_);
     ev_io_stop(event_loop_, &write_watcher_);
@@ -131,6 +151,7 @@ int IncommingConnection::read()
 {
     ssize_t bytes_read;
 
+    last_activity_ = ev_now(event_loop_);
     bytes_read = recv(socket_, read_buffer_, read_buffer_size_, 0);
 
     if (bytes_read < 0) {
@@ -155,6 +176,7 @@ int IncommingConnection::write(const char *data, const size_t &len)
 {
     ssize_t bytes_written;
 
+    last_activity_ = ev_now(event_loop_);
     bytes_written = send(socket_, data, len, 0);
 
     return bytes_written;
@@ -164,6 +186,20 @@ int IncommingConnection::write(const char *data, const size_t &len)
 Server *IncommingConnection::server()
 {
     return server_;
+}
+
+
+bool IncommingConnection::timeout()
+{
+    ev_tstamp after = last_activity_ - ev_now(event_loop_) + kConnectionTimeout;
+    if (after < 0.0) {
+        return true;
+    }
+
+    ev_timer_set(&timeout_timer_, after, 0.0);
+    ev_timer_start(event_loop_, &timeout_timer_);
+
+    return false;
 }
 
 }; // namespace http

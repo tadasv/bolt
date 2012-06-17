@@ -45,6 +45,8 @@ class IncommingConnection {
 
         Server *server();
 
+        bool timeout();
+
         Request request;
         Response response;
     protected:
@@ -53,9 +55,11 @@ class IncommingConnection {
         ssize_t read_buffer_size_;
         char *read_buffer_;
         struct sockaddr_in address_;
-        struct ev_io read_watcher_;
-        struct ev_io write_watcher_;
+        ev_io read_watcher_;
+        ev_io write_watcher_;
         struct ev_loop *event_loop_;
+        ev_timer timeout_timer_;
+        ev_tstamp last_activity_;
     private:
 };
 
