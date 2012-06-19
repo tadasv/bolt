@@ -20,10 +20,15 @@ TEST(DBDocumentTestCase, ParserTest)
 
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{}"));
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\"}"));
+    ASSERT_STREQ("123", d.id().c_str());
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": 0}"));
+    ASSERT_STREQ("123", d.id().c_str());
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": 1}"));
+    ASSERT_STREQ("123", d.id().c_str());
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": -1}"));
+    ASSERT_STREQ("123", d.id().c_str());
     ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\", \"_ttl\": -1, \"b\": 123}"));
+    ASSERT_STREQ("123", d.id().c_str());
 
     ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse(""));
     ASSERT_EQ(bolt::db::kDocumentErrorParseFailed, d.parse("\"\""));

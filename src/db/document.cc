@@ -70,6 +70,12 @@ Document::~Document()
 }
 
 
+const std::string & Document::id() const
+{
+    return id_;
+}
+
+
 DocumentError Document::parse(const std::string &str)
 {
     return parse(str.c_str());
@@ -96,8 +102,8 @@ DocumentError Document::parse(const char *str)
     // a new one on the fly.
     json_t *doc_id = json_object_get(json, "_id");
     if (!doc_id) {
-        std::string uuid = generate_uuid_str();
-        doc_id = json_string(uuid.c_str());
+        id_ = generate_uuid_str();
+        doc_id = json_string(id_.c_str());
         if (json_object_set_new(json, "_id", doc_id) == -1) {
             json_decref(json);
             return kDocumentError;
@@ -109,6 +115,7 @@ DocumentError Document::parse(const char *str)
             json_decref(json);
             return kDocumentErrorInvalidID;
         }
+        id_ = std::string(json_string_value(doc_id));
     }
 
     // Extract TTL. Don't try to be too smart about it. We only support

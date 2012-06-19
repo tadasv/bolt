@@ -50,6 +50,8 @@ class Document {
         Document();
         ~Document();
 
+        const std::string & id() const;
+
         DocumentError parse(const char *str);
         DocumentError parse(const std::string &str);
     private:
