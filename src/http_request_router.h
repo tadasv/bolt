@@ -23,7 +23,8 @@
 
 #define __BOLT_HTTP_REQUEST_ROUTER__
 
-#include <map>
+#include <vector>
+#include <utility>
 
 #include "http_incomming_connection.h"
 
@@ -31,15 +32,25 @@ namespace bolt {
 namespace network {
 namespace http {
 
+enum RouteTypes {
+    RouteExact = 0,
+    RouteStartsWith
+};
+
 class RequestRouter {
     public:
         RequestRouter();
         ~RequestRouter();
 
         typedef void (*request_handler_t)(IncommingConnection *);
-        typedef std::map<std::string, request_handler_t> routes_t;
+        typedef struct {
+            std::string path;
+            RouteTypes type;
+            request_handler_t handler;
+        } route_entry_t;
+        typedef std::vector<route_entry_t> routes_t;
 
-        void set_route(const std::string &path, request_handler_t handler);
+        void add_route(const std::string &path, RouteTypes type, request_handler_t handler);
         request_handler_t route(const std::string &path);
 
     private:

@@ -52,17 +52,36 @@ RequestRouter::~RequestRouter()
 }
 
 
-void RequestRouter::set_route(const std::string &path, request_handler_t handler)
+void RequestRouter::add_route(const std::string &path, RouteTypes type, request_handler_t handler)
 {
-    routes_[path] = handler;
+    route_entry_t entry;
+
+    entry.path = path;
+    entry.type = type;
+    entry.handler = handler;
+    routes_.push_back(entry);
 }
 
 
 RequestRouter::request_handler_t RequestRouter::route(const std::string &path)
 {
-    routes_t::iterator iter = routes_.find(path);
-    if (iter != routes_.end()) {
-        return iter->second;
+    routes_t::iterator iter;
+
+    for (iter = routes_.begin(); iter != routes_.end(); iter++) {
+        switch (iter->type) {
+            case RouteExact:
+                if (path == iter->path) {
+                    return iter->handler;
+                }
+                break;
+            case RouteStartsWith:
+                if (path.compare(0, iter->path.length(), iter->path) == 0) {
+                    return iter->handler;
+                }
+                break;
+            default:
+                return default_handler;
+        }
     }
     return default_handler;
 }
