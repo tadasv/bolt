@@ -24,6 +24,12 @@
 #define __BOLT_STRING_UTILS_H__
 
 #include <sstream>
+#include <vector>
+#include <utility>
+
+namespace bolt {
+namespace util {
+namespace string {
 
 template<class T>
 std::string t_to_string(T i)
@@ -32,5 +38,32 @@ std::string t_to_string(T i)
     ss << i;
     return ss.str();
 }
+
+
+typedef std::pair<size_t, size_t> string_offset_t;
+typedef std::vector<string_offset_t> string_tokens_t;
+
+/**
+ * @brief Tokenize string.
+ *
+ * This function will create a list of tokens (index and size) split by the
+ * delimiter.
+ *
+ * Example:
+ * Delimiter: '/'
+ *
+ * "1/2" -> [ [0, 1], [2, 1] ]
+ * "//"  -> []
+ *
+ * @param delim delimiter
+ * @param str String.
+ *
+ * @return A list of tokens.
+ */
+string_tokens_t string_get_tokens(const char *str, const char &delim);
+
+}; // namespace string
+}; // namespace util
+}; // namespace bolt
 
 #endif // end of include guard: __BOLT_STRING_UTILS_H__
