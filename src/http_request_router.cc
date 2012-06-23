@@ -34,7 +34,7 @@ static void default_handler(IncommingConnection *connection)
     std::string body("{\"error\":\"invalid request\"}");
 
     res.headers["Content-Type"] = "application/json";
-    res.headers["Content-Length"] = t_to_string(body.length());
+    res.headers["Content-Length"] = bolt::util::string::t_to_string(body.length());
 
     res.write_head(400);
     res.write(body.c_str(), body.length());
