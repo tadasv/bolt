@@ -37,6 +37,7 @@ class SetManager {
     public:
         bool add(Set *set);
         Set *find(const std::string &set_name) const;
+        const set_map_t & sets() const;
     private:
         set_map_t sets_;
 };

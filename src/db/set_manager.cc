@@ -50,5 +50,11 @@ bool SetManager::add(Set *set)
     return true;
 }
 
+
+const set_map_t & SetManager::sets() const
+{
+    return sets_;
+}
+
 }; // namespace db
 }; // namespace bolt
