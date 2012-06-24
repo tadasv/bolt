@@ -14,6 +14,20 @@ TEST(DBDocumentTestCase, UUIDTest)
 }
 
 
+TEST(DBDocumentTestCase, toStringTest)
+{
+    bolt::db::Document d;
+    std::string str;
+
+    ASSERT_FALSE(d.to_string(str));
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{}"));
+    ASSERT_TRUE(str.empty());
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_FALSE(str.empty());
+}
+
+
 TEST(DBDocumentTestCase, ParserTest)
 {
     bolt::db::Document d;

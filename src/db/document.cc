@@ -76,6 +76,22 @@ const std::string & Document::id() const
 }
 
 
+bool Document::to_string(std::string &json_string) const
+{
+    if (!root_) {
+        return false;
+    }
+
+    char *str = json_dumps(root_, JSON_COMPACT);
+    if (!str) {
+        return false;
+    }
+
+    json_string = std::string(str);
+    return true;
+}
+
+
 DocumentError Document::parse(const std::string &str)
 {
     return parse(str.c_str());

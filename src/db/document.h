@@ -52,6 +52,8 @@ class Document {
 
         const std::string & id() const;
 
+        bool to_string(std::string &json_string) const;
+
         DocumentError parse(const char *str);
         DocumentError parse(const std::string &str);
     private:
