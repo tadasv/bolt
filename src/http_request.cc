@@ -51,6 +51,7 @@ Request::Request()
     content_length = ULLONG_MAX;
     http_parser_init(&parser_, HTTP_REQUEST);
     parser_.data = this;
+    method = kMethodUnknown;
 }
 
 
@@ -91,6 +92,24 @@ static int on_uri(http_parser *parser, const char *at, size_t len)
     if (!request->url.parse(at, len)) {
         request->state = kErrorInvalid;
         return -1;
+    }
+
+    switch (parser->method) {
+        case HTTP_GET:
+            request->method = kMethodGet;
+            break;
+        case HTTP_POST:
+            request->method = kMethodPost;
+            break;
+        case HTTP_PUT:
+            request->method = kMethodPut;
+            break;
+        case HTTP_DELETE:
+            request->method = kMethodDelete;
+            break;
+        default:
+            request->method = kMethodUnknown;
+            break;
     }
 
     return 0;

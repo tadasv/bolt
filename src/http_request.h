@@ -41,6 +41,15 @@ enum RequestStates {
     kErrorInvalid
 };
 
+
+enum RequestMethods {
+    kMethodGet = 0,
+    kMethodPost,
+    kMethodPut,
+    kMethodDelete,
+    kMethodUnknown
+};
+
 class Request : public Message {
     public:
         Request();
@@ -50,6 +59,7 @@ class Request : public Message {
         RequestStates state;
         size_t content_length;
         Url url;
+        RequestMethods method;
 
         // Temporary header data that we use while parsing
         // a request.
