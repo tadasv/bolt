@@ -25,6 +25,9 @@
 #include "logging.h"
 #include "http_server.h"
 #include "http_request_router.h"
+#include "db/set_manager.h"
+
+#include "handler/cache.h"
 
 int main(int argc, char **argv)
 {
@@ -48,6 +51,9 @@ int main(int argc, char **argv)
 
     bolt::network::http::RequestRouter router;
 
+    router.add_route("/cache/", bolt::network::http::RouteStartsWith,
+                                bolt::network::http::handler::cache);
+
     bolt::network::http::Server server(3333, loop_socket);
 
     if (server.init() != bolt::core::kResultOK) {
@@ -56,6 +62,9 @@ int main(int argc, char **argv)
     }
 
     server.set_router(&router);
+
+    bolt::db::SetManager set_manager;
+    server.set_manager(&set_manager);
 
     if (server.start() != bolt::core::kResultOK) {
         printf("Failed to start server.\n");
