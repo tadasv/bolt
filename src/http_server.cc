@@ -138,6 +138,18 @@ RequestRouter *Server::router() const
 }
 
 
+void Server::set_manager(bolt::db::SetManager *manager)
+{
+    manager_ = manager;
+}
+
+
+bolt::db::SetManager *Server::manager() const
+{
+    return manager_;
+}
+
+
 IncommingConnection* Server::accept_connection()
 {
     IncommingConnection *connection;

@@ -31,6 +31,7 @@
 #include "types.h"
 #include "http_incomming_connection.h"
 #include "http_request_router.h"
+#include "db/set_manager.h"
 
 namespace bolt {
 namespace network {
@@ -55,6 +56,9 @@ class Server {
         void set_router(RequestRouter *router);
         RequestRouter *router() const;
 
+        void set_manager(bolt::db::SetManager *manager);
+        bolt::db::SetManager *manager() const;
+
         int listening_socket() const;
         struct ev_loop *event_loop() const;
 
@@ -67,6 +71,7 @@ class Server {
         struct ev_io accept_watcher_;
         connections_t connections_;
         RequestRouter *router_;
+        bolt::db::SetManager *manager_;
 };
 
 }; // namespace http
