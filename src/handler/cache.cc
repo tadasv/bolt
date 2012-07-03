@@ -24,6 +24,8 @@
 #include "http_response.h"
 #include "string_utils.h"
 
+#include "db/document.h"
+#include "db/set.h"
 #include "db/set_manager.h"
 
 #include "messages.h"
@@ -87,6 +89,37 @@ static void _show_cache_stats(Request &req, Response &res, bolt::db::SetManager 
 }
 
 
+static void _create_document(Request &req,
+                             Response &res,
+                             std::string &set_name,
+                             bolt::db::SetManager *manager)
+{
+    bolt::db::Document *doc = new bolt::db::Document();
+    bolt::db::DocumentError error = doc->parse(req.body.c_str());
+
+    if (error != bolt::db::kDocumentOK) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInvalidRequest);
+        return;
+    }
+
+    bolt::db::Set *set = manager->find(set_name);
+    if (!set) {
+        set = new bolt::db::Set(set_name);
+        manager->add(set);
+    }
+
+    if (!set->add(doc)) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInternalError);
+        return;
+    }
+
+    std::string body = std::string("{\"_id\":\"") + doc->id() + std::string("\"}");
+    _write_response(res, body);
+}
+
+
 void cache(IncommingConnection *connection)
 {
     Response &res = connection->response;
@@ -110,13 +143,16 @@ void cache(IncommingConnection *connection)
                 bolt::util::string::string_offset_t & off = tokens[0];
                 std::string set_name = std::string(tmp + off.first, off.second);
 
-                if (!connection->server()->manager()->find(set_name)) {
-                    _write_response(res, bolt::network::messages::kMessageUnknownSet);
+                if (connection->request.method == bolt::network::http::kMethodPost) {
+                    // create a new document in this set.
+                    //
+                    _create_document(req, res, set_name,
+                                     connection->server()->manager());
                     return;
                 }
 
-                if (connection->request.method == bolt::network::http::kMethodPost) {
-                    // create a new document in this set.
+                if (!connection->server()->manager()->find(set_name)) {
+                    _write_response(res, bolt::network::messages::kMessageUnknownSet);
                     return;
                 }
 
