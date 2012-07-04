@@ -19,53 +19,46 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __BOLT_HTTP_INCOMMING_CONNECTION_H__
+#ifndef __BOLT_HTTP_REQUEST_ROUTER__
 
-#define __BOLT_HTTP_INCOMMING_CONNECTION_H__
+#define __BOLT_HTTP_REQUEST_ROUTER__
 
-#include <netinet/in.h>
-#include <ev.h>
+#include <vector>
+#include <utility>
 
-#include "http_request.h"
-#include "http_response.h"
+#include "http/incomming_connection.h"
 
 namespace bolt {
 namespace network {
 namespace http {
 
-class Server;
+enum RouteTypes {
+    RouteExact = 0,
+    RouteStartsWith
+};
 
-class IncommingConnection {
+class RequestRouter {
     public:
-        IncommingConnection(Server *server, struct ev_loop *loop, int socket, struct sockaddr_in address);
-        ~IncommingConnection();
+        RequestRouter();
+        ~RequestRouter();
 
-        int read();
-        int write(const char *data, const size_t &len);
+        typedef void (*request_handler_t)(IncommingConnection *);
+        typedef struct {
+            std::string path;
+            RouteTypes type;
+            request_handler_t handler;
+        } route_entry_t;
+        typedef std::vector<route_entry_t> routes_t;
 
-        Server *server();
+        void add_route(const std::string &path, RouteTypes type, request_handler_t handler);
+        request_handler_t route(const std::string &path);
 
-        bool timeout();
-
-        Request request;
-        Response response;
-    protected:
-        Server *server_;
-        int socket_;
-        ssize_t read_buffer_size_;
-        char *read_buffer_;
-        struct sockaddr_in address_;
-        ev_io read_watcher_;
-        ev_io write_watcher_;
-        struct ev_loop *event_loop_;
-        ev_timer timeout_timer_;
-        ev_tstamp last_activity_;
     private:
+        routes_t routes_;
 };
 
 }; // namespace http
 }; // namespace network
 }; // namespace bolt
 
-
-#endif // end of include guard: __BOLT_INCOMMING_CONNECTION_H__
+#endif // end of include guard: __BOLT_HTTP_REQUEST_ROUTER__

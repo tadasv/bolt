@@ -23,8 +23,8 @@
 #include <ev.h>
 
 #include "logging.h"
-#include "http_server.h"
-#include "http_request_router.h"
+#include "http/server.h"
+#include "http/request_router.h"
 #include "db/set_manager.h"
 
 #include "handler/cache.h"

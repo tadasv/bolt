@@ -27,8 +27,8 @@
 #include <map>
 
 #include <http_parser.h>
-#include "http_message.h"
-#include "http_url.h"
+#include "http/message.h"
+#include "http/url.h"
 
 namespace bolt {
 namespace network {

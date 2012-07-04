@@ -22,9 +22,9 @@
 #include <stdio.h>
 
 #include "logging.h"
-#include "http_server.h"
-#include "http_incomming_connection.h"
-#include "http_request_router.h"
+#include "http/server.h"
+#include "http/incomming_connection.h"
+#include "http/request_router.h"
 
 namespace bolt {
 namespace network {

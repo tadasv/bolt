@@ -19,9 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.#include "handler/cache.h"
 
-#include "http_server.h"
-#include "http_incomming_connection.h"
-#include "http_response.h"
+#include "http/server.h"
+#include "http/incomming_connection.h"
+#include "http/response.h"
 #include "string_utils.h"
 
 #include "db/document.h"

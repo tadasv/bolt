@@ -29,8 +29,8 @@
 #include <map>
 
 #include "types.h"
-#include "http_incomming_connection.h"
-#include "http_request_router.h"
+#include "http/incomming_connection.h"
+#include "http/request_router.h"
 #include "db/set_manager.h"
 
 namespace bolt {

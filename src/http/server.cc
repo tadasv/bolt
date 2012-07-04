@@ -23,8 +23,8 @@
 #include <fcntl.h>
 
 #include "logging.h"
-#include "http_server.h"
-#include "http_incomming_connection.h"
+#include "http/server.h"
+#include "http/incomming_connection.h"
 
 namespace bolt {
 namespace network {

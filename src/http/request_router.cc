@@ -19,7 +19,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "http_request_router.h"
+#include "http/request_router.h"
 #include "string_utils.h"
 
 namespace bolt {

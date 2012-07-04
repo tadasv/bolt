@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "logging.h"
-#include "http_request.h"
+#include "http/request.h"
 
 namespace bolt {
 namespace network {

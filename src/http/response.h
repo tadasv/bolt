@@ -25,7 +25,7 @@
 
 #include <string>
 
-#include "http_message.h"
+#include "http/message.h"
 
 namespace bolt {
 namespace network {

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "http_url.h"
+#include "http/url.h"
 
 namespace http = bolt::network::http;
 

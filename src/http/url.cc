@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <http_parser.h>
-#include "http_url.h"
+#include "http/url.h"
 
 namespace bolt {
 namespace network {

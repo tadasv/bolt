@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "http_request_router.h"
+#include "http/request_router.h"
 
 class bolt::network::http::IncommingConnection;
 

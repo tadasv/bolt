@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "http_request.h"
+#include "http/request.h"
 
 static const std::string REQUEST_A = std::string(
 "GET /path?a=1&b=2&_ HTTP/1.1\r\n"
