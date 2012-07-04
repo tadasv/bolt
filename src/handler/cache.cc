@@ -151,17 +151,20 @@ void cache(IncommingConnection *connection)
                     return;
                 }
 
-                if (!connection->server()->manager()->find(set_name)) {
-                    _write_response(res, bolt::network::messages::kMessageUnknownSet);
-                    return;
-                }
-
                 if (connection->request.method == bolt::network::http::kMethodGet) {
                     // Show stats about the set
-                    json_t *json = json_pack("{s:{s:s}}",
+                    bolt::db::Set *set = connection->server()->manager()->find(set_name);
+                    if (!set) {
+                        _write_response(res, bolt::network::messages::kMessageUnknownSet);
+                        return;
+                    }
+
+                    json_t *json = json_pack("{s:{s:s,s:i}}",
                                              "data",
                                              "set",
-                                             set_name.c_str());
+                                             set->name().c_str(),
+                                             "size",
+                                             set->size());
                     _write_response(res, std::string(json_dumps(json, JSON_COMPACT)));
                     json_decref(json);
                     return;

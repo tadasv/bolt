@@ -63,5 +63,11 @@ Document *Set::find(const std::string &id) const
     return iter->second;
 }
 
+
+size_t Set::size() const
+{
+    return documents_.size();
+}
+
 }; // namespace db
 }; // namespace bolt
