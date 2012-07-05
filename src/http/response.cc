@@ -45,7 +45,7 @@ void Response::write_head(const unsigned int &status_code)
     buffer += "HTTP/1.1 " + bolt::util::string::t_to_string(status_code) + "\r\n";
 
     headers_t::iterator iter;
-    for (iter = headers.begin(); iter != headers.end(); iter++) {
+    for (iter = headers.begin(); iter != headers.end(); ++iter) {
         buffer += iter->first + ": " + iter->second + "\r\n";
     }
     buffer += "\r\n";

@@ -67,7 +67,7 @@ RequestRouter::request_handler_t RequestRouter::route(const std::string &path)
 {
     routes_t::iterator iter;
 
-    for (iter = routes_.begin(); iter != routes_.end(); iter++) {
+    for (iter = routes_.begin(); iter != routes_.end(); ++iter) {
         switch (iter->type) {
             case RouteExact:
                 if (path == iter->path) {
