@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <ev.h>
 
+#include "option_parser.h"
+#include "string_utils.h"
 #include "logging.h"
 #include "http/server.h"
 #include "http/request_router.h"
@@ -34,6 +36,15 @@ int main(int argc, char **argv)
     struct ev_loop *loop = EV_DEFAULT;
     struct ev_loop *loop_socket = NULL;
     ev_embed embed;
+
+    unsigned int port_number = 3333;
+    char *param = bolt::core::get_option(argv, argv+argc, "-p");
+    if (param) {
+        if (!bolt::util::string::string_to_t<unsigned int>(param, port_number)) {
+            printf("Invalid port number\n");
+            return -1;
+        }
+    }
 
     if (ev_supported_backends() &
         ~ev_recommended_backends() &
@@ -54,7 +65,7 @@ int main(int argc, char **argv)
     router.add_route("/cache/", bolt::network::http::RouteStartsWith,
                                 bolt::network::http::handler::cache);
 
-    bolt::network::http::Server server(3333, loop_socket);
+    bolt::network::http::Server server(port_number, loop_socket);
 
     if (server.init() != bolt::core::kResultOK) {
         printf("Failed to initialise server.\n");

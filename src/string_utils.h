@@ -40,6 +40,13 @@ std::string t_to_string(T i)
 }
 
 
+template<class T>
+bool string_to_t(const char *str, T &val)
+{
+    return !(std::istringstream(str) >> val).fail();
+}
+
+
 typedef std::pair<size_t, size_t> string_offset_t;
 typedef std::vector<string_offset_t> string_tokens_t;
 
