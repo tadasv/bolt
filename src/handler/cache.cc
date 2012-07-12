@@ -48,6 +48,31 @@ static void _write_response(Response &res, const std::string &body)
 }
 
 
+static void _show_document(Response &res, bolt::db::SetManager *manager, std::string &set_name, std::string &doc_id)
+{
+    bolt::db::Set *set = manager->find(set_name);
+    if (!set) {
+        res.write_head(404);
+        res.end();
+        return;
+    }
+
+    bolt::db::Document *doc = set->find(doc_id);
+    if (!doc) {
+        res.write_head(404);
+        res.end();
+        return;
+    }
+
+    std::string body;
+    if (!doc->to_string(body)) {
+        _write_response(res, bolt::network::messages::kMessageInternalError);
+    }
+
+    _write_response(res, body);
+}
+
+
 static void _show_cache_stats(Request &req, Response &res, bolt::db::SetManager *manager)
 {
     if (req.method != bolt::network::http::kMethodGet) {
@@ -182,7 +207,7 @@ void cache(IncommingConnection *connection)
                 std::string set_name = std::string(tmp + off.first, off.second);
                 off = tokens[1];
                 std::string doc_id = std::string(tmp + off.first, off.second);
-                _write_response(res, std::string("\"showing '" + set_name + "' / '" + doc_id + "'\""));
+                _show_document(res, connection->server()->manager(), set_name, doc_id);
                 return;
             }
             break;
