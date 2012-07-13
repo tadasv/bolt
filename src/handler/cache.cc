@@ -145,6 +145,51 @@ static void _create_document(Request &req,
 }
 
 
+static void _replace_document(Request &req,
+                              Response &res,
+                              bolt::db::SetManager *manager,
+                              const std::string &set_name,
+                              const std::string &doc_id)
+{
+    bolt::db::Document *doc = new bolt::db::Document();
+    bolt::db::DocumentError error = doc->parse(req.body.c_str());
+
+    if (error != bolt::db::kDocumentOK) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInvalidRequest);
+        return;
+    }
+
+    // make sure to overwrite the id if it was present in the body
+    if (!doc->set_id(doc_id)) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInvalidRequest);
+        return;
+    }
+
+    bolt::db::Set *set = manager->find(set_name);
+    if (!set) {
+        set = new bolt::db::Set(set_name);
+        manager->add(set);
+    }
+
+    bolt::db::Document *old_doc = set->pop(doc_id);
+    if (old_doc) {
+        delete old_doc;
+    }
+
+    if (!set->add(doc)) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInternalError);
+        return;
+    }
+
+    std::string body = std::string("{\"_id\":\"") + doc->id() + std::string("\"}");
+    _write_response(res, body);
+
+}
+
+
 void cache(IncommingConnection *connection)
 {
     Response &res = connection->response;
@@ -207,8 +252,25 @@ void cache(IncommingConnection *connection)
                 std::string set_name = std::string(tmp + off.first, off.second);
                 off = tokens[1];
                 std::string doc_id = std::string(tmp + off.first, off.second);
-                _show_document(res, connection->server()->manager(), set_name, doc_id);
-                return;
+
+                switch (connection->request.method) {
+                    case bolt::network::http::kMethodGet:
+                        _show_document(res,
+                                       connection->server()->manager(),
+                                       set_name,
+                                       doc_id);
+                        break;
+                    case bolt::network::http::kMethodPut:
+                        _replace_document(req,
+                                          res,
+                                          connection->server()->manager(),
+                                          set_name,
+                                          doc_id);
+                        break;
+                    default:
+                        _write_response(res, bolt::network::messages::kMessageUnsupportedMethod);
+                        break;
+                }
             }
             break;
         default:
