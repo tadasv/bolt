@@ -145,6 +145,29 @@ static void _create_document(Request &req,
 }
 
 
+static void _delete_document(Response &res,
+                             bolt::db::SetManager *manager,
+                             const std::string &set_name,
+                             const std::string &doc_id)
+{
+    bolt::db::Set *set = manager->find(set_name);
+    if (!set) {
+        res.write_head(200);
+        res.end();
+        return;
+    }
+
+    bolt::db::Document *old_doc = set->pop(doc_id);
+    if (old_doc) {
+        delete old_doc;
+    }
+
+
+    res.write_head(200);
+    res.end();
+}
+
+
 static void _replace_document(Request &req,
                               Response &res,
                               bolt::db::SetManager *manager,
@@ -266,6 +289,12 @@ void cache(IncommingConnection *connection)
                                           connection->server()->manager(),
                                           set_name,
                                           doc_id);
+                        break;
+                    case bolt::network::http::kMethodDelete:
+                        _delete_document(res,
+                                         connection->server()->manager(),
+                                         set_name,
+                                         doc_id);
                         break;
                     default:
                         _write_response(res, bolt::network::messages::kMessageUnsupportedMethod);
