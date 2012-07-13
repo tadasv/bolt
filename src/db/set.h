@@ -40,6 +40,7 @@ class Set {
         const std::string & name() const;
         bool add(Document *document);
         Document *find(const std::string &id) const;
+        Document *pop(const std::string &id);
         size_t size() const;
     private:
         std::string name_;

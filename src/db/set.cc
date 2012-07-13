@@ -53,6 +53,20 @@ bool Set::add(Document *document)
 }
 
 
+Document *Set::pop(const std::string &id)
+{
+    document_map_t::iterator iter = documents_.find(id);
+    if (iter == documents_.end()) {
+        return NULL;
+    }
+
+
+    Document *doc = iter->second;
+    documents_.erase(iter);
+    return doc;
+}
+
+
 Document *Set::find(const std::string &id) const
 {
     document_map_t::const_iterator iter = documents_.find(id);
