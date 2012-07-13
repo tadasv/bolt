@@ -51,6 +51,7 @@ class Document {
         ~Document();
 
         const std::string & id() const;
+        bool set_id(const std::string &id);
 
         bool to_string(std::string &json_string) const;
 

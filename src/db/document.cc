@@ -76,6 +76,31 @@ const std::string & Document::id() const
 }
 
 
+bool Document::set_id(const std::string &id)
+{
+    if (!root_) {
+        return false;
+    }
+
+    json_t *doc_id = json_object_get(root_, "_id");
+    if (!doc_id) {
+        doc_id = json_string(id.c_str());
+        if (json_object_set_new(root_, "_id", doc_id) == -1) {
+            json_decref(doc_id);
+            return false;
+        }
+    } else {
+        if (json_string_set(doc_id, id.c_str()) == -1) {
+            return false;
+        }
+    }
+
+    id_ = id;
+
+    return true;
+}
+
+
 bool Document::to_string(std::string &json_string) const
 {
     if (!root_) {

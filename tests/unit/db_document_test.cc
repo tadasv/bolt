@@ -28,6 +28,18 @@ TEST(DBDocumentTestCase, toStringTest)
 }
 
 
+TEST(DBDocumentTestCase, SetIDTest)
+{
+    bolt::db::Document d;
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{}"));
+    ASSERT_TRUE(d.set_id(std::string("123")));
+    ASSERT_STREQ("123", d.id().c_str());
+    ASSERT_TRUE(d.set_id(std::string("abcd")));
+    ASSERT_STREQ("abcd", d.id().c_str());
+}
+
+
 TEST(DBDocumentTestCase, ParserTest)
 {
     bolt::db::Document d;
