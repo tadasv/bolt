@@ -117,6 +117,29 @@ bool Document::to_string(std::string &json_string) const
 }
 
 
+const json_t *Document::json() const
+{
+    return root_;
+}
+
+
+bool Document::merge_with(const Document &doc)
+{
+    if (json_object_update(root_, const_cast<json_t*>(doc.json())) == -1) {
+        return false;
+    }
+
+    // Overwrite _id with current id in case there was
+    // _id field in doc.
+    set_id(id_);
+
+    // TODO update TTL.
+    // TODO nested object merge (maybe).
+
+    return true;
+}
+
+
 DocumentError Document::parse(const std::string &str)
 {
     return parse(str.c_str());

@@ -54,6 +54,9 @@ class Document {
         bool set_id(const std::string &id);
 
         bool to_string(std::string &json_string) const;
+        const json_t *json() const;
+
+        bool merge_with(const Document &doc);
 
         DocumentError parse(const char *str);
         DocumentError parse(const std::string &str);

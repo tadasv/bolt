@@ -81,3 +81,46 @@ TEST(DBDocumentTestCase, ParserTest)
     ASSERT_EQ(bolt::db::kDocumentErrorInvalidTTL, d.parse("{\"_id\": \"id\", \"_ttl\": false}"));
 
 }
+
+
+TEST(DBDocumentTestCase, MergeTest)
+{
+    bolt::db::Document d;
+    bolt::db::Document d2;
+    std::string str;
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d.parse("{\"_id\":\"123\"}"));
+    ASSERT_STREQ("123", d.id().c_str());
+    ASSERT_EQ(bolt::db::kDocumentOK, d2.parse("{\"abc\": 555}"));
+
+    ASSERT_TRUE(d.merge_with(d2));
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_TRUE(str.find("\"abc\":555") != std::string::npos);
+    ASSERT_STREQ("123", d.id().c_str());
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d2.parse("{\"abc\": [1, 2, 3]}"));
+    ASSERT_TRUE(d.merge_with(d2));
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_TRUE(str.find("\"abc\":[1,2,3]") != std::string::npos);
+    ASSERT_STREQ("123", d.id().c_str());
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d2.parse("{\"abc\": [5]}"));
+    ASSERT_TRUE(d.merge_with(d2));
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_TRUE(str.find("\"abc\":[5]") != std::string::npos);
+    ASSERT_STREQ("123", d.id().c_str());
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d2.parse("{\"key\": {\"a\": 444}}"));
+    ASSERT_TRUE(d.merge_with(d2));
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_TRUE(str.find("\"key\":{\"a\":444}") != std::string::npos);
+    ASSERT_STREQ("123", d.id().c_str());
+
+    ASSERT_EQ(bolt::db::kDocumentOK, d2.parse("{\"key\": {\"b\": 333}}"));
+    ASSERT_TRUE(d.merge_with(d2));
+    ASSERT_TRUE(d.to_string(str));
+    ASSERT_TRUE(str.find("\"key\":{\"a\":444}") == std::string::npos);
+    ASSERT_TRUE(str.find("\"key\":{\"b\":333}") != std::string::npos);
+    ASSERT_STREQ("123", d.id().c_str());
+
+}
