@@ -168,6 +168,55 @@ static void _delete_document(Response &res,
 }
 
 
+static void _update_document(Request &req,
+                             Response &res,
+                             bolt::db::SetManager *manager,
+                             const std::string &set_name,
+                             const std::string &doc_id)
+{
+    bolt::db::Document *doc = new bolt::db::Document();
+    bolt::db::DocumentError error = doc->parse(req.body.c_str());
+
+    if (error != bolt::db::kDocumentOK) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInvalidRequest);
+        return;
+    }
+
+    // make sure to overwrite the id if it was present in the body
+    if (!doc->set_id(doc_id)) {
+        delete doc;
+        _write_response(res, bolt::network::messages::kMessageInvalidRequest);
+        return;
+    }
+
+    bolt::db::Set *set = manager->find(set_name);
+    if (!set) {
+        set = new bolt::db::Set(set_name);
+        manager->add(set);
+    }
+
+    bolt::db::Document *existing_doc = set->find(doc_id);
+    if (!existing_doc) {
+        existing_doc = doc;
+        if (!set->add(existing_doc)) {
+            delete doc;
+            _write_response(res, bolt::network::messages::kMessageInternalError);
+            return;
+        }
+    } else {
+        if (!existing_doc->merge_with(*doc)) {
+            delete doc;
+            _write_response(res, bolt::network::messages::kMessageInternalError);
+            return;
+        }
+    }
+
+    std::string body = std::string("{\"_id\":\"") + existing_doc->id() + std::string("\"}");
+    _write_response(res, body);
+}
+
+
 static void _replace_document(Request &req,
                               Response &res,
                               bolt::db::SetManager *manager,
@@ -269,7 +318,6 @@ void cache(IncommingConnection *connection)
             }
             break;
         case 2:
-            // show exact document
             {
                 bolt::util::string::string_offset_t & off = tokens[0];
                 std::string set_name = std::string(tmp + off.first, off.second);
@@ -296,6 +344,12 @@ void cache(IncommingConnection *connection)
                                          set_name,
                                          doc_id);
                         break;
+                    case bolt::network::http::kMethodPost:
+                        _update_document(req,
+                                         res,
+                                         connection->server()->manager(),
+                                         set_name,
+                                         doc_id);
                     default:
                         _write_response(res, bolt::network::messages::kMessageUnsupportedMethod);
                         break;
