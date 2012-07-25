@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "string_utils.h"
+#include "core/string_utils.h"
 
 using namespace bolt::util::string;
 

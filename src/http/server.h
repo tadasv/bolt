@@ -28,7 +28,7 @@
 
 #include <map>
 
-#include "types.h"
+#include "core/types.h"
 #include "http/incomming_connection.h"
 #include "http/request_router.h"
 #include "db/set_manager.h"

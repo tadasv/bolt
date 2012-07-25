@@ -23,8 +23,8 @@
 #include <ev.h>
 
 #include "option_parser.h"
-#include "string_utils.h"
-#include "logging.h"
+#include "core/string_utils.h"
+#include "core/logging.h"
 #include "http/server.h"
 #include "http/request_router.h"
 #include "db/set_manager.h"

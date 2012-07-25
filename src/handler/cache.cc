@@ -22,7 +22,7 @@
 #include "http/server.h"
 #include "http/incomming_connection.h"
 #include "http/response.h"
-#include "string_utils.h"
+#include "core/string_utils.h"
 
 #include "db/document.h"
 #include "db/set.h"

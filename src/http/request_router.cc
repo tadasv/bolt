@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "http/request_router.h"
-#include "string_utils.h"
+#include "core/string_utils.h"
 
 namespace bolt {
 namespace network {
