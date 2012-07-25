@@ -19,7 +19,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "core/timeout_manager.h"
+#include "core/timer_manager.h"
 
 namespace bolt {
 namespace core {
