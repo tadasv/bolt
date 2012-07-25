@@ -19,9 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef __BOLT_CORE_TIMEOUT_MANAGER__
+#ifndef __BOLT_CORE_TIMER_MANAGER__
 
-#define __BOLT_CORE_TIMEOUT_MANAGER__
+#define __BOLT_CORE_TIMER_MANAGER__
 
 #include <set>
 
@@ -33,10 +33,10 @@ namespace core {
 typedef bool(*timeout_callback_t)(void *data);
 typedef std::set<struct ev_timer *> timer_set_t;
 
-class TimeoutManager {
+class TimerManager {
     public:
-        TimeoutManager(struct ev_loop *loop);
-        ~TimeoutManager();
+        TimerManager(struct ev_loop *loop);
+        ~TimerManager();
 
         bool create_timer(ev_tstamp timeout, void *caller_data, timeout_callback_t callback);
         bool remove_timer(struct ev_timer *timer);
@@ -48,4 +48,4 @@ class TimeoutManager {
 }; // namespace core
 }; // namespace bolt
 
-#endif // end of include guard: __BOLT_CORE_TIMEOUT_MANAGER__
+#endif // end of include guard: __BOLT_CORE_TIMER_MANAGER__
