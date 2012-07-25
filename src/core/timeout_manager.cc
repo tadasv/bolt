@@ -25,6 +25,7 @@ namespace bolt {
 namespace core {
 
 typedef struct timer_data_ {
+    TimeoutManager *timeout_manager;
     timeout_callback_t callback;
     void *data;
 } timer_data;
@@ -36,6 +37,9 @@ static void timeout_wrapper(struct ev_loop *loop, ev_timer *timer, int events)
 
     if (success) {
     }
+
+    TimeoutManager *tm = data->timeout_manager;
+    tm->remove_timer(timer);
 }
 
 TimeoutManager::TimeoutManager(struct ev_loop *loop)
@@ -52,18 +56,36 @@ TimeoutManager::~TimeoutManager()
     }
 }
 
-bool TimeoutManager::create_timeout(ev_tstamp timeout, void *caller_data, timeout_callback_t callback)
+bool TimeoutManager::create_timer(ev_tstamp timeout, void *caller_data, timeout_callback_t callback)
 {
     ev_timer *timer = new ev_timer;
     ev_timer_init(timer, timeout_wrapper, timeout, 0.0);
 
     timer_data *data = new timer_data;
+    data->timeout_manager = this;
     data->callback = callback;
     data->data = caller_data;
     timer->data = data;
     timers_.insert(timer);
 
     ev_timer_start(loop_, timer);
+
+    return true;
+}
+
+
+bool TimeoutManager::remove_timer(struct ev_timer *timer)
+{
+    timer_set_t::iterator iter = timers_.find(timer);
+
+    if (iter == timers_.end()) {
+        return false;
+    }
+
+    ev_timer_stop(loop_, timer);
+    delete (timer_data*)timer->data;
+    delete timer;
+    timers_.erase(iter);
 
     return true;
 }

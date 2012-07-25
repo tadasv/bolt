@@ -38,7 +38,8 @@ class TimeoutManager {
         TimeoutManager(struct ev_loop *loop);
         ~TimeoutManager();
 
-        bool create_timeout(ev_tstamp timeout, void *caller_data, timeout_callback_t callback);
+        bool create_timer(ev_tstamp timeout, void *caller_data, timeout_callback_t callback);
+        bool remove_timer(struct ev_timer *timer);
     private:
         struct ev_loop *loop_;
         timer_set_t timers_;
