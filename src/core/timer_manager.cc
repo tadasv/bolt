@@ -24,14 +24,6 @@
 namespace bolt {
 namespace core {
 
-typedef struct timer_data_ {
-    TimerManager *timer_manager;
-    struct ev_timer *timer;
-    timeout_callback_t callback;
-    void *object;
-    void *data;
-} timer_data_t;
-
 static void timeout_wrapper(struct ev_loop *loop, ev_timer *timer, int events)
 {
     timer_data_t *data = static_cast<timer_data_t*>(timer->data);
@@ -41,7 +33,7 @@ static void timeout_wrapper(struct ev_loop *loop, ev_timer *timer, int events)
     }
 
     TimerManager *tm = data->timer_manager;
-    tm->remove_timer(timer);
+    tm->remove_timer(data->object);
 }
 
 TimerManager::TimerManager(struct ev_loop *loop)
@@ -51,10 +43,12 @@ TimerManager::TimerManager(struct ev_loop *loop)
 
 TimerManager::~TimerManager()
 {
-    timer_set_t::iterator iter;
+    timer_map_t::iterator iter;
     for (iter = timers_.begin(); iter != timers_.end(); ++iter) {
-        ev_timer_stop(loop_, *iter);
-        delete *iter;
+        timer_data_t *data = iter->second;
+        ev_timer_stop(loop_, data->timer);
+        delete data->timer;
+        delete data;
     }
 }
 
@@ -70,24 +64,25 @@ bool TimerManager::create_timer(void *object, void *data, ev_tstamp timeout, tim
     tdata->object = object;
     tdata->timer = timer;
     timer->data = tdata;
-    timers_.insert(timer);
+    timers_[object] = tdata;
 
     ev_timer_start(loop_, timer);
     return true;
 }
 
 
-bool TimerManager::remove_timer(struct ev_timer *timer)
+bool TimerManager::remove_timer(void *object)
 {
-    timer_set_t::iterator iter = timers_.find(timer);
+    timer_map_t::iterator iter = timers_.find(object);
 
     if (iter == timers_.end()) {
         return false;
     }
 
-    ev_timer_stop(loop_, timer);
-    delete (timer_data_t*)timer->data;
-    delete timer;
+    timer_data_t *data = static_cast<timer_data_t*>(iter->second);
+    ev_timer_stop(loop_, data->timer);
+    delete data->timer;
+    delete data;
     timers_.erase(iter);
 
     return true;

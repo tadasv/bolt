@@ -23,7 +23,7 @@
 
 #define __BOLT_CORE_TIMER_MANAGER__
 
-#include <set>
+#include <map>
 
 #include <ev.h>
 
@@ -31,7 +31,18 @@ namespace bolt {
 namespace core {
 
 typedef bool(*timeout_callback_t)(void *object, void *data);
-typedef std::set<struct ev_timer *> timer_set_t;
+
+class TimerManager;
+
+typedef struct timer_data_ {
+    TimerManager *timer_manager;
+    struct ev_timer *timer;
+    timeout_callback_t callback;
+    void *object;
+    void *data;
+} timer_data_t;
+
+typedef std::map<void *, timer_data_t *> timer_map_t;
 
 class TimerManager {
     public:
@@ -39,10 +50,10 @@ class TimerManager {
         ~TimerManager();
 
         bool create_timer(void *object, void *data, ev_tstamp timeout, timeout_callback_t callback);
-        bool remove_timer(struct ev_timer *timer);
+        bool remove_timer(void *object);
     private:
         struct ev_loop *loop_;
-        timer_set_t timers_;
+        timer_map_t timers_;
 };
 
 }; // namespace core
