@@ -25,6 +25,11 @@
 namespace bolt {
 namespace db {
 
+SetManager::SetManager()
+    : expiration_tm_(EV_DEFAULT)
+{
+}
+
 Set* SetManager::find(const std::string &set_name) const
 {
     set_map_t::const_iterator iter = sets_.find(set_name);

@@ -26,6 +26,8 @@
 #include <string>
 #include <map>
 
+#include "core/timer_manager.h"
+
 namespace bolt {
 namespace db {
 
@@ -35,11 +37,14 @@ typedef std::map<std::string, Set*> set_map_t;
 
 class SetManager {
     public:
+        SetManager();
+
         bool add(Set *set);
         Set *find(const std::string &set_name) const;
         const set_map_t & sets() const;
     private:
         set_map_t sets_;
+        bolt::core::TimerManager expiration_tm_;
 };
 
 }; // namespace db
