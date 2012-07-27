@@ -30,7 +30,7 @@
 namespace bolt {
 namespace core {
 
-typedef bool(*timeout_callback_t)(void *data);
+typedef bool(*timeout_callback_t)(void *object, void *data);
 typedef std::set<struct ev_timer *> timer_set_t;
 
 class TimerManager {
@@ -38,7 +38,7 @@ class TimerManager {
         TimerManager(struct ev_loop *loop);
         ~TimerManager();
 
-        bool create_timer(ev_tstamp timeout, void *caller_data, timeout_callback_t callback);
+        bool create_timer(void *object, void *data, ev_tstamp timeout, timeout_callback_t callback);
         bool remove_timer(struct ev_timer *timer);
     private:
         struct ev_loop *loop_;
