@@ -30,6 +30,9 @@
 #include "db/set_manager.h"
 
 #include "handler/cache.h"
+#include "handler/exit.h"
+
+struct ev_loop *global_loop = EV_DEFAULT;
 
 int main(int argc, char **argv)
 {
@@ -64,6 +67,8 @@ int main(int argc, char **argv)
 
     router.add_route("/cache/", bolt::network::http::RouteStartsWith,
                                 bolt::network::http::handler::cache);
+    router.add_route("/exit/", bolt::network::http::RouteExact,
+                                bolt::network::http::handler::exit);
 
     bolt::network::http::Server server(port_number, loop_socket);
 
@@ -82,7 +87,13 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    ev_run(loop, 0);
+    global_loop = loop;
+
+    ev_run(global_loop, 0);
+
+    if (loop_socket) {
+        ev_loop_destroy(loop_socket);
+    }
 
     return 0;
 }
